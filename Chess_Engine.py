@@ -1,9 +1,12 @@
+from cmath import pi
+from tracemalloc import start
 import pygame as pg
 import numpy as np
 import time
 import sys
 
 from pygame import color
+
 
 pg.init()
 clock = pg.time.Clock()
@@ -32,14 +35,14 @@ class Board:
         self.cur_turn = "w"
         self.game_state = 1
         self.dimension = 8
-        self.sqr_size = window_length / self.dimension
+        self.sqr_size = int(window_length // self.dimension)
 
     def draw_board(self, screen):
         for row in range(self.dimension):
             for column in range(self.dimension):
                 color = self.COLORS[(row+column)%2]
                 pg.draw.rect(screen, color, pg.Rect(column * self.sqr_size, row * self.sqr_size, self.sqr_size , self.sqr_size))
-                #print(column * self.sqr_size, "-----", row*self.sqr_size)
+                #(column * self.sqr_size, "-----", row*self.sqr_size)
 
     def preload_images(self):
         for row in range(self.dimension):
@@ -62,8 +65,8 @@ class Board:
 
 class Piece(Board):
     
-    piece_name = {"bR", "bN", "bB", "bQ", "bK", "bp",}
-    COORDINATES = {}
+    #piece_name = {"bR", "bN", "bB", "bQ", "bK", "bp",}
+    #COORDINATES = {}
     
     def __init__(self, window_length) -> None:
         super().__init__(window_length)
@@ -82,11 +85,20 @@ class Piece(Board):
         return (s_x, s_y)
 
     def piece_type_color(self, pos, Board):
-        new_x = int(pos[0] // Board.sqr_size)
-        new_y = int(pos[1] // Board.sqr_size)
-        cur_piece = Board.board[new_y, new_x] 
+        ctr = 0
+        new_x = int(pos[0] // self.sqr_size) 
+        new_y = int(pos[1] // self.sqr_size)
+        if new_x == 8:
+            cur_piece = Board.board[new_y, 7]
+        else:
+          cur_piece = Board.board[new_y, new_x] 
         cur_piece_color = cur_piece[0] if cur_piece[0] != "-" else "-"
         piece_n_color = [cur_piece, cur_piece_color]
+        
+        #if type(piece_n_color[0]) == int:
+            #for i in piece_n_color[0]:
+                #if i < 0 or i > 448:
+                    #ctr += 1
         return piece_n_color
 
     def check_if_turn(self, pos, screen, Board):
@@ -96,7 +108,7 @@ class Piece(Board):
         else:
             Board.error(pos, screen)
             return False
-            
+
     def highlight_valid(self, allowed, screen):
         color = {0 : (72,209,204) , 1 : (175, 238, 238)}
         for pos in allowed:
@@ -112,7 +124,7 @@ class Piece(Board):
 
         Board.board[new_y, new_x] = Board.board[prev_y, prev_x]   
             
-        if cur_pos != self.prev_pos:
+        if cur_pos != self.prev_pos :
             Board.board[prev_y, prev_x] = "-"
             Board.COORDINATES.pop(self.prev_pos)
 
@@ -120,4 +132,47 @@ class Piece(Board):
         self.current_piece = 0
         self.cur_turn = "b" if self.cur_turn == "w" else "w"
 
+
+    def compute_sliding_piece_movs(self, start_sqr, cur_dir, Board):
+        dir_index = {0 : (0,-1), 1 : (1,0), 2 : (0,1), 3 : (-1,0), 4 : (-1,-1), 5 : (1, -1), 6 : (1,1), 7 : (-1,1)}
+        temp_dir = dir_index[cur_dir]
+        temp_moves = []
+        for x in range(self.sqr_size, 512, self.sqr_size):
+                temp_x = (x * temp_dir[0]) + start_sqr[0]
+                temp_y = (x * temp_dir[1]) + start_sqr[1]
+                #if self.piece_type_color(xy, Board)[1] != cur_piece_clr:
+                temp_moves.append ((temp_x, temp_y))
+        return temp_moves
+
+
+
+
+
+    
+    def sliding_pieces_movs(self, piece_type, start_sqr, Board):
+        start_dir = 4 if piece_type == "B" else 0
+        end_dir = 4 if piece_type == "R" else 8
+        legal_movs = [start_sqr]
+        piece = self.piece_type_color(start_sqr, Board)
+
+        for dir in range(start_dir, end_dir):
+            temp_moves = self.compute_sliding_piece_movs(start_sqr, dir, Board)
+            for moves in temp_moves:
+                k = 0
+                for x_y in moves:
+                    if x_y >= 0 and x_y <= 448:
+                        k += 1
+                if k == 2:
+                    if self.piece_type_color(moves, Board)[1] != piece[1] and self.piece_type_color(moves,Board)[1] != "-":
+                        legal_movs.append(moves)
+                        break
+                    elif self.piece_type_color(moves,Board)[1] == piece[1]:
+                        break
+                    print(piece[1])
+                    legal_movs.append(moves)
+        return legal_movs
+
+    
+    def if_check(self, x):
+        pass
     
