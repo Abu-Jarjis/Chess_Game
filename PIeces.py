@@ -1,10 +1,9 @@
 from hashlib import new
 from tabnanny import check
 from tkinter import VERTICAL
+from click import password_option
 import pygame as pg
 import numpy as np
-import sys
-import time
 from Chess_Engine import Piece
 
 
@@ -109,7 +108,15 @@ class King(Piece):
         super().__init__(window_length)
         
     def allowed_moves(self, cur_pos, cur_piece_clr, Board):
-        pass
+        legal_mov = self.sliding_pieces_movs("K", cur_pos, Board)
+    
+                
+    def if_check(self, x):
+        password_option
+
+
+
+
         
 class Queen(Piece):
 
