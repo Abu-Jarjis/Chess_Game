@@ -23,21 +23,23 @@ PIECE = Piece(res_x)
 
 def if_check(king_allowed_movs, king_square, cur_pos, enemy_attack_squares):
     if "King_Checked" in king_allowed_movs:
-            print("CHECKED_KING")
+            ("CHECKED_KING")
             if cur_pos == king_square:
-                print("SELECT_KING")
-                cur_pos = king_square
+                ("SELECT_KING")
+                #cur_pos = king_square
                 #PIECE.current_piece = BOARD.COORDINATES[cur_pos]
                 PIECE.prev_pos = cur_pos
                 prev_piece = PIECE.piece_type_color(PIECE.prev_pos, BOARD)
                 PIECE.allowed = PIECE_CLASSES[prev_piece[0][1]].allowed_moves(cur_pos, prev_piece[1], BOARD, PIECE, sqr_attacks = enemy_attack_squares[0][::])[1]
+                
             else:
-                print("ERROR")
+                ("ERROR")
                 BOARD.error(cur_pos, SCREEN)
                 return False
     return True
 
-def still_check(board):
+def still_check(cur_piece, new_pos):
+    PIECE.mov_piece(new_pos, BOARD, test_if_check=True)
     
 
     pass
@@ -50,13 +52,13 @@ def castle_rook(new_pos):
     if new_pos[0] == castle_right:
         new_castle_pos = new_pos[0] - PIECE.sqr_size
         PIECE.prev_pos = (castle_right + PIECE.sqr_size, new_pos[1])
-        PIECE.mov_piece(( new_castle_pos, new_pos[1]), BOARD)
+        PIECE.mov_piece(( new_castle_pos, new_pos[1]), BOARD, test_if_check=True)
 
     elif new_pos[0] == castle_left:
         new_castle_pos = new_pos[0] + PIECE.sqr_size
         PIECE.prev_pos = (castle_left - 2*PIECE.sqr_size, new_pos
         [1])
-        PIECE.mov_piece((new_castle_pos, new_pos[1]), BOARD)
+        PIECE.mov_piece((new_castle_pos, new_pos[1]), BOARD, test_if_check=True)
     pass
 
 
@@ -66,7 +68,9 @@ def move_handler(event):
             return
             pass
         if (event.button, BOARD.game_state) == (1,1):
+            
                 cur_pos = PIECE.sqr_select(pg.mouse.get_pos())
+
                 if not PIECE.check_if_turn(cur_pos, SCREEN, BOARD):
                     return
 
@@ -77,10 +81,10 @@ def move_handler(event):
                     prev_piece = PIECE.piece_type_color(PIECE.prev_pos, BOARD)
                     enemy_attack_squares = PIECE.check_enemy_attacks(BOARD, PIECE)
                     king_square, king_color = enemy_attack_squares[1], enemy_attack_squares[2]
-                    king_allowed_movs = PIECE_CLASSES["K"].allowed_moves(king_square, king_color, BOARD, PIECE, is_attack = False, sqr_attacks = enemy_attack_squares[0][::])
+                    king_allowed_movs = PIECE_CLASSES["K"].allowed_moves(king_square, king_color, BOARD, PIECE, check_attack_sqr = False, sqr_attacks = enemy_attack_squares[0][::])
                     
                     if prev_piece[0][1] == "K":
-                        PIECE.allowed = king_allowed_movs
+                        PIECE.allowed[::] = king_allowed_movs[::]
                     else:
                         PIECE.allowed = PIECE_CLASSES[prev_piece[0][1]].allowed_moves(cur_pos, prev_piece[1], BOARD, PIECE)
                     
@@ -117,21 +121,23 @@ def move_handler(event):
                 
             if new_pos in PIECE.allowed:
                 cur_piece = PIECE.piece_type_color(PIECE.prev_pos, BOARD)[0]
-                PIECE.mov_piece(new_pos, BOARD)
+                PIECE.mov_piece(new_pos, BOARD, test_if_check=True)
                 prev_sqr, after_sqr = PIECE.move_logging(new_pos, BOARD)
 
                 if PIECE.cur_turn == "w":
                     PIECE.W_moves.append((cur_piece, prev_sqr, after_sqr))
+                    print("STORED WHITE")
                 if PIECE.cur_turn == "b":
                     PIECE.B_moves.append((cur_piece, prev_sqr, after_sqr))
+                    print("STORED BLACK")
                 
                 
             
-                print(cur_piece)
+                (cur_piece)
                 if cur_piece[1] == "K":
-                    print("WORKS")
+                    ("WORKS")
                     if PIECE_CLASSES["K"].W_King_startsqr == PIECE.prev_pos or PIECE_CLASSES["K"].B_King_startsqr == PIECE.prev_pos:
-                        print("WORKS")
+                        ("WORKS")
                         castle_rook(new_pos)
                     
                 PIECE.cur_turn = "b" if PIECE.cur_turn == "w" else "w"
