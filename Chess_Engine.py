@@ -24,14 +24,15 @@ class Board:
     
     def __init__(self, window_length) -> None:
         self.board = np.array( [["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR"],
-                               ["bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"],
-                               ["-", "-", "-", "-", "-", "-", "-", "-"],
-                               ["-", "-", "-", "-", "-", "-", "-", "-"],
-                               ["-", "-", "-", "-", "-", "-", "-", "-"],
-                               ["-", "-", "-", "-", "-", "-", "-", "-"],
-                               ["wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"],
-                               ["wR", "wN", "wB", "wQ", "wK", "wB", 
-                               "wN", "wR"]] )
+                                ["bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"],
+                                ["-", "-", "-", "-", "-", "-", "-", "-"],
+                                ["-", "-", "-", "-", "-", "-", "-", "-"],
+                                ["-", "-", "-", "-", "-", "-", "-", "-"],
+                                ["-", "-", "-", "-", "-", "-", "-", "-"],
+                                ["wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"],
+                                ["wR", "wN", "wB", "wQ", "wK", "wB", 
+                                "wN", "wR"]] )
+        self.board_static = self.board[::]
         self.board_algebra = np.array([["a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8"],
                                         ["a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7"],
                                         ["a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6"],
@@ -51,7 +52,6 @@ class Board:
     def algebra_dict(self):
         for letr in self.sqr_algebra:
             self.piece_algebra[letr]
-
         pass
     def draw_board(self, screen):
         for row in range(self.dimension):
@@ -85,4 +85,4 @@ class Board:
 
     
     
-   
+
