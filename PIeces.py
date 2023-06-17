@@ -38,7 +38,7 @@ class Piece(Board):
         if new_x == 8:
             cur_piece = Board.board[new_y, 7]
         else:
-          cur_piece = Board.board[new_y, new_x] 
+            cur_piece = Board.board[new_y, new_x] 
         cur_piece_color = cur_piece[0] if cur_piece[0] != "-" else "-"
         piece_n_color = [cur_piece, cur_piece_color]
         
@@ -63,31 +63,36 @@ class Piece(Board):
             sqr_color = color[((pos[0]+pos[1]) // self.sqr_size) % 2]
             pg.draw.rect(screen, sqr_color, pg.Rect(pos[0], pos[1], self.sqr_size, self.sqr_size))
         pass
-    
-    def mov_piece(self, cur_pos, Board):
+    def unnamed_func(self, new_pos, Board, test_if_check):
+        pass
+
+    def mov_piece(self, new_pos, Board, test_if_check):
         
         self.current_piece = Board.COORDINATES[self.prev_pos]
-        new_x = int(cur_pos[0] // Board.sqr_size)
-        new_y = int(cur_pos[1] // Board.sqr_size)
+        new_x = int(new_pos[0] // Board.sqr_size)
+        new_y = int(new_pos[1] // Board.sqr_size)
         prev_x = int(self.prev_pos[0] // Board.sqr_size)
         prev_y = int(self.prev_pos[1] // Board.sqr_size)
         (prev_x, prev_y,new_x, new_y)
         piece_type = self.piece_type_color(self.prev_pos, Board)[0]
         Board.board[new_y, new_x] = Board.board[prev_y, prev_x]  
             
-        if cur_pos != self.prev_pos :
+        if new_pos != self.prev_pos and not test_if_check :
+            Board.board_static[prev_y, prev_x] = "-"
+            Board.COORDINATES.pop(self.prev_pos)
+        if new_pos != self.prev_pos and  test_if_check :
             Board.board[prev_y, prev_x] = "-"
             Board.COORDINATES.pop(self.prev_pos)
 
-        Board.COORDINATES[cur_pos] = self.current_piece
+        Board.COORDINATES[new_pos] = self.current_piece
         (Board.board)
-       
+
         #(PIECE_CLASSES[piece_type[1]].move_ctr_B, PIECE_CLASSES[piece_type[1]].move_ctr_W)
         #self.current_piece = 0
-       
-    def move_logging(self, cur_pos, Board):
-        new_x = int(cur_pos[0] // Board.sqr_size)
-        new_y = int(cur_pos[1] // Board.sqr_size)
+
+    def move_logging(self, new_pos, Board):
+        new_x = int(new_pos[0] // Board.sqr_size)
+        new_y = int(new_pos[1] // Board.sqr_size)
         prev_x = int(self.prev_pos[0] // Board.sqr_size)
         prev_y = int(self.prev_pos[1] // Board.sqr_size)
         return Board.board_algebra[prev_y, prev_x], Board.board[new_y, new_x]
@@ -114,7 +119,7 @@ class Piece(Board):
         return temp_moves
 
 
-    def sliding_pieces_movs(self, piece_type, start_sqr, Board, is_attack):
+    def sliding_pieces_movs(self, piece_type, start_sqr, Board, check_attack_sqr):
         start_dir = 4 if piece_type == "B" else 0
         end_dir = 4 if piece_type == "R" else 8
 
@@ -129,7 +134,7 @@ class Piece(Board):
                 if color != piece[1] and color != "-":
                     legal_movs.append(move)
                     break
-                if color == piece[1] and is_attack:
+                if color == piece[1] and check_attack_sqr:
                     legal_movs.append(move)
                     break
                 if color == piece[1]:
@@ -162,13 +167,13 @@ class Piece(Board):
                         continue
                     
 
-                    squares.extend(PIECE_CLASSES[cur_piece].allowed_moves(cur_pos, cur_color, Board, Piece, is_attack = True)[1:])
+                    squares.extend(PIECE_CLASSES[cur_piece].allowed_moves(cur_pos, cur_color, Board, Piece, check_attack_sqr = True)[1:])
 
                 
 
 
         return squares, king_square, king_color
-        
+    
 
 class Pawn(Piece):
 
@@ -186,7 +191,7 @@ class Pawn(Piece):
 
       
 
-    def allowed_moves(self, cur_pos, cur_piece_clr, Board, Piece, is_attack = False):
+    def allowed_moves(self, cur_pos, cur_piece_clr, Board, Piece, check_attack_sqr = False):
         k = 1 if cur_piece_clr == "w" else -1
         legal_mov = [cur_pos]
         new_x = cur_pos[0]
@@ -225,7 +230,7 @@ class Knight(Piece):
     
     
 
-    def allowed_moves(self, cur_pos, cur_piece_clr, Board, Piece, is_attack = False):
+    def allowed_moves(self, cur_pos, cur_piece_clr, Board, Piece, check_attack_sqr = False):
         temp = [cur_pos]
         legal_mov = [cur_pos]
         new_x = cur_pos[0]
@@ -243,7 +248,7 @@ class Knight(Piece):
         for xy in (temp):
 
             if max(xy) <= 448 and min(xy) >= 0:
-                if is_attack:
+                if check_attack_sqr:
                     legal_mov.append(xy)
                 elif  self.piece_type_color(xy, Board)[1] != cur_piece_clr:
                     legal_mov.append(xy)
@@ -258,7 +263,7 @@ class Knight(Piece):
         #-
         #-
         #-
-        if is_attack:
+        if check_attack_sqr:
             return legal_mov[1:]
         return legal_mov
         
@@ -268,8 +273,8 @@ class Bishop(Piece):
         super().__init__(window_length)
     
         
-    def allowed_moves(self, cur_pos, cur_piece_clr, Board, Piece, is_attack = False):
-        legal_mov = self.sliding_pieces_movs("B", cur_pos, Board, is_attack)
+    def allowed_moves(self, cur_pos, cur_piece_clr, Board, Piece, check_attack_sqr = False):
+        legal_mov = self.sliding_pieces_movs("B", cur_pos, Board, check_attack_sqr)
                 
         return legal_mov       
         
@@ -280,8 +285,8 @@ class Rook(Piece):
         super().__init__(window_length)
     
         
-    def allowed_moves(self, cur_pos, cur_piece_clr, Board, Piece, is_attack = False):
-        legal_mov = self.sliding_pieces_movs("R", cur_pos, Board, is_attack)
+    def allowed_moves(self, cur_pos, cur_piece_clr, Board, Piece, check_attack_sqr = False):
+        legal_mov = self.sliding_pieces_movs("R", cur_pos, Board, check_attack_sqr)
                 
         return legal_mov       
 
@@ -298,14 +303,15 @@ class King(Piece):
     def still_in_check(self):
         pass
     def if_castle(self, cur_pos, cur_piece_clr, Board, logger):
-        print("runnning")
+        ("runnning")
         castle_movs = []
         rook_right = self.piece_type_color((self.sqr_size * 7 , cur_pos[1]), Board)[0]
         rook_left = self.piece_type_color((0, cur_pos[1]), Board)[0]
+        print(logger)
         for mov in logger:
             if f"{cur_piece_clr}K" in  mov:
                 return castle_movs
-      
+
         castle_movs.extend(self.king_side_castle(cur_pos, logger, rook_right))
         castle_movs.extend(self.queen_side_castle(cur_pos, logger, rook_left))
 
@@ -327,7 +333,7 @@ class King(Piece):
             if (x, cur_pos[1]) not in Board.COORDINATES.keys():
                 flag += 1
         if flag == 2:
-            print("FLAG 2")
+            ("FLAG 2")
             castle_movs.append((self.king_side_castle_movs[-1], cur_pos[1]))
 
         return castle_movs
@@ -349,15 +355,16 @@ class King(Piece):
             castle_movs.append((self.queen_side_castle_movs[1], cur_pos[1]))
         return castle_movs
 
-    def allowed_moves(self, cur_pos, cur_piece_clr, Board, Piece, is_attack = False, sqr_attacks = []):
+    def allowed_moves(self, cur_pos, cur_piece_clr, Board, Piece, check_attack_sqr = False, sqr_attacks = []):
         piece_log = {"w": Piece.W_moves, "b": Piece.B_moves}
-        legal_mov = self.sliding_pieces_movs("K", cur_pos, Board, is_attack)
+        legal_mov = self.sliding_pieces_movs("K", cur_pos, Board, check_attack_sqr)
         legal_mov.append(cur_pos)
         legal_mov_2 = list(filter(lambda move: move not in sqr_attacks, legal_mov))
 
-        castle_movs_temp  = self.if_castle(cur_pos, cur_piece_clr, Board, piece_log[self.cur_turn])
+        castle_movs_temp  = self.if_castle(cur_pos, cur_piece_clr, Board, piece_log[Piece.cur_turn])
+        print(Piece.cur_turn)
         (castle_movs_temp)
-        #print(list(filter(lambda mov: mov in sqr_attacks, castle_movs_temp)))
+        #(list(filter(lambda mov: mov in sqr_attacks, castle_movs_temp)))
         castle_movs = [] if list(filter(lambda mov: mov in sqr_attacks, castle_movs_temp)) else castle_movs_temp[:]
         (castle_movs)
         if castle_movs:
@@ -377,8 +384,8 @@ class Queen(Piece):
         super().__init__(window_length)
     
 
-    def allowed_moves(self, cur_pos, cur_piece_clr, Board, Piece, is_attack = False):
-        legal_mov = self.sliding_pieces_movs("Q", cur_pos, Board, is_attack)
+    def allowed_moves(self, cur_pos, cur_piece_clr, Board, Piece, check_attack_sqr = False):
+        legal_mov = self.sliding_pieces_movs("Q", cur_pos, Board, check_attack_sqr)
                 
         return legal_mov       
 
